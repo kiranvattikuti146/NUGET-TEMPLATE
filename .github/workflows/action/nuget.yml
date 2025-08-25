@@ -1,4 +1,4 @@
-name: Main
+name: main
 
 on:
   push:
@@ -6,43 +6,120 @@ on:
       - main
 
 jobs:
-  call-nuget:
-    uses: ./.github/workflows/reusable-nuget.yml
+  restore:
+    uses: ./.github/workflows/action.ml
     with:
       command: 'restore'
       restoreSolution: '**/*.sln'
       feedsToUse: 'select'
+      vstsFeed: ''
       includeNuGetOrg: 'true'
+      nugetConfigPath: '' 
+      externalFeedCredentials: ''
       noCache: 'false'
       disableParallelProcessing: 'false'
+      restoreDirectory: ''
       verbosityRestore: 'Detailed'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: ''
+      allowPackageConflicts: 'false'
+      publishFeedCredentials: ''
+      packagesToPack: '**/*.csproj'
+      configuration: 'Release'
+      packDestination: '$(Build.ArtifactStagingDirectory)'
+      arguments: ''
+      publishPackageMetadata: 'true'
+      verbosityPush: 'Detailed'
+      versioningScheme: 'off'
+      includeReferencedProjects: 'false'
+      versionEnvVar: ''
+      majorVersion: '1'
+      minorVersion: '0'
+      patchVersion: '0'
+      packTimezone: 'utc'
+      includeSymbols: 'false'
+      toolPackage: 'false'
+      buildProperties: ''
+      basePath: ''
+      verbosityPack: 'Detailed'
 
-  pack-and-push:
-    needs: call-nuget
-    uses: ./.github/workflows/reusable-nuget.yml
+  pack:
+    needs: restore
+    uses: ./.github/workflows/action.yml
     with:
       command: 'pack'
       packagesToPack: '**/*.csproj'
+      configuration: 'Release'
       packDestination: 'artifacts'
+      basePath: ''
+      includeSymbols: 'false'
+      toolPackage: 'false'
+      buildProperties: 'Configuration=Release'
+      verbosityPack: 'Detailed'
       versioningScheme: 'byPrereleaseNumber'
       majorVersion: '1'
       minorVersion: '0'
       patchVersion: '0'
-      includeSymbols: 'false'
-      buildProperties: 'Configuration=Release'
-      verbosityPack: 'Detailed'
-
-  publish:
-    needs: pack-and-push
+      packTimezone: 'utc'
+      includeReferencedProjects: 'false'
+      restoreSolution: '**/*.sln'
+      packagesToPush: 'artifacts/**/*.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: ''
+      allowPackageConflicts: 'false'
+      publishFeedCredentials: ''
+      feedsToUse: 'select'
+      vstsFeed: ''
+      includeNuGetOrg: 'true'
+      nugetConfigPath: ''
+      externalFeedCredentials: ''
+      noCache: 'false'
+      disableParallelProcessing: 'false'
+      restoreDirectory: ''
+      verbosityRestore: 'Detailed'
+      publishPackageMetadata: 'true'
+      verbosityPush: 'Detailed'
+      versionEnvVar: ''
+      arguments: ''
+      
+      
+  push:
+    needs: pack
     uses: ./.github/workflows/reusable-nuget.yml
     with:
       command: 'push'
       packagesToPush: 'artifacts/**/*.nupkg'
       nuGetFeedType: 'external'
-      publishFeedCredentials: 'https://api.nuget.org/v3/index.json'
+      publishVstsFeed: ''
       allowPackageConflicts: 'false'
+      publishFeedCredentials: 'https://api.nuget.org/v3/index.json'
+      publishPackageMetadata: 'true'
       verbosityPush: 'Normal'
-
-
-
-
+      # restore/pack inputs included for completeness
+      restoreSolution: '**/*.sln'
+      packagesToPack: '**/*.csproj'
+      configuration: 'Release'
+      packDestination: 'artifacts'
+      feedsToUse: 'select'
+      vstsFeed: ''
+      includeNuGetOrg: 'true'
+      nugetConfigPath: ''
+      externalFeedCredentials: ''
+      noCache: 'false'
+      disableParallelProcessing: 'false'
+      restoreDirectory: ''
+      verbosityRestore: 'Detailed'
+      versioningScheme: 'off'
+      includeReferencedProjects: 'false'
+      versionEnvVar: ''
+      majorVersion: '1'
+      minorVersion: '0'
+      patchVersion: '0'
+      packTimezone: 'utc'
+      includeSymbols: 'false'
+      toolPackage: 'false'
+      buildProperties: ''
+      basePath: ''
+      verbosityPack: 'Detailed'
+      arguments: ''
