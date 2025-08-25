@@ -1,0 +1,48 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  call-nuget:
+    uses: ./.github/workflows/reusable-nuget.yml
+    with:
+      command: 'restore'
+      restoreSolution: '**/*.sln'
+      feedsToUse: 'select'
+      includeNuGetOrg: 'true'
+      noCache: 'false'
+      disableParallelProcessing: 'false'
+      verbosityRestore: 'Detailed'
+
+  pack-and-push:
+    needs: call-nuget
+    uses: ./.github/workflows/reusable-nuget.yml
+    with:
+      command: 'pack'
+      packagesToPack: '**/*.csproj'
+      packDestination: 'artifacts'
+      versioningScheme: 'byPrereleaseNumber'
+      majorVersion: '1'
+      minorVersion: '0'
+      patchVersion: '0'
+      includeSymbols: 'false'
+      buildProperties: 'Configuration=Release'
+      verbosityPack: 'Detailed'
+
+  publish:
+    needs: pack-and-push
+    uses: ./.github/workflows/reusable-nuget.yml
+    with:
+      command: 'push'
+      packagesToPush: 'artifacts/**/*.nupkg'
+      nuGetFeedType: 'external'
+      publishFeedCredentials: 'https://api.nuget.org/v3/index.json'
+      allowPackageConflicts: 'false'
+      verbosityPush: 'Normal'
+
+
+
+
